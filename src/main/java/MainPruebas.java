@@ -3,7 +3,7 @@ import figures.Sphere;
 
 import java.awt.*;
 
-public class Main {
+public class MainPruebas {
 
     public static void main(String... args) {
 

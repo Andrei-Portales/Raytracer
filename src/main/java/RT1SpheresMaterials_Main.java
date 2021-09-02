@@ -3,7 +3,7 @@ import figures.Sphere;
 
 import java.awt.*;
 
-public class RT1SpheresMaterials {
+public class RT1SpheresMaterials_Main {
 
     public static void main(String... args) {
 
