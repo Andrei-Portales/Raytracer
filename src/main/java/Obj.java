@@ -27,10 +27,10 @@ public class Obj {
     }
 
     private void read(String[] lines) {
-        ArrayList<Double[]> verts = new ArrayList();
-        ArrayList<Double[]> texCoords = new ArrayList();
-        ArrayList<Double[]> normals = new ArrayList();
-        ArrayList<Integer[][]> faces = new ArrayList();
+        ArrayList<Double[]> verts = new ArrayList<>();
+        ArrayList<Double[]> texCoords = new ArrayList<>();
+        ArrayList<Double[]> normals = new ArrayList<>();
+        ArrayList<Integer[][]> faces = new ArrayList<>();
 
         for (String line : lines) {
             if (line != null && !line.isEmpty()) {
@@ -67,9 +67,7 @@ public class Obj {
                         }
                     }
 
-                } catch (Exception e) {
-
-                }
+                } catch (Exception e) {}
             }
         }
         this.vertices = verts.toArray(new Double[0][]);
