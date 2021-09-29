@@ -6,8 +6,8 @@ public class RT2OpaqueReflectionsRefractions_Main {
 
     public static void main(String... args) {
 
-        int width = 2000;
-        int height = 1500;
+        int width = 1000;
+        int height = 500;
 
         Raytracer rtx = new Raytracer(width, height);
 
