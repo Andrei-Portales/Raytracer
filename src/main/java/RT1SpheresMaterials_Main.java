@@ -12,14 +12,13 @@ public class RT1SpheresMaterials_Main {
 
         Raytracer rtx = new Raytracer(width, height);
 
-        rtx.setClearColor(new Color(50,50,50));
+        rtx.setClearColor(new Color(50, 50, 50));
         rtx.glClear();
 
-        Material body = new Material(new Color(220,220,220));
-        Material white = new Material(new Color(255,255,255));
-        Material black = new Material(new Color(0,0,0));
-        Material orange = new Material(new Color(255,165,0));
-
+        Material body = new Material(new Color(220, 220, 220), 0,1, null);
+        Material white = new Material(new Color(255, 255, 255), 0,1, null);
+        Material black = new Material(new Color(0, 0, 0), 01, 1, null);
+        Material orange = new Material(new Color(255, 165, 0), 0,1, null);
 
 
         // Cuerpo
@@ -48,7 +47,6 @@ public class RT1SpheresMaterials_Main {
         rtx.addFigure(new Sphere(new Double[]{0.15, -1.2, -8.0}, 0.1, black));
         rtx.addFigure(new Sphere(new Double[]{0.4, -1.3, -8.0}, 0.1, black));
         rtx.addFigure(new Sphere(new Double[]{-0.4, -1.3, -8.0}, 0.1, black));
-
 
 
         rtx.glRender();

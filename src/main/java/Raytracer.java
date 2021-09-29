@@ -1,6 +1,4 @@
-import figures.Figure;
-import figures.Intersect;
-import figures.Material;
+import figures.*;
 import util.AMath;
 
 import javax.imageio.ImageIO;
@@ -10,6 +8,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class Raytracer {
+    private final int MAXRECURSIONDEPTH = 3;
     private final Color BLACK = new Color(0, 0, 0);
     private final Color WHITE = new Color(255, 255, 255);
     private int width;
@@ -21,13 +20,14 @@ public class Raytracer {
     private int vpWidth;
     private int vpHeight;
     private Color[][] pixels;
-
     private Texture background;
-
     private Double[] camPosition;
     private int fov;
-
     private ArrayList<Figure> scene;
+    private ArrayList<PointLight> pointLights;
+    private AmbientLight ambientLight;
+    private DirectionalLight directionalLight;
+    private EnvMap envMap;
 
 
     public Raytracer(int width, int height) {
@@ -51,11 +51,30 @@ public class Raytracer {
         this.currentColor = currentColor;
     }
 
+    public void setEnvMap(EnvMap envMap) {
+        this.envMap = envMap;
+    }
+
+    public void setDirectionalLight(DirectionalLight directionalLight) {
+        this.directionalLight = directionalLight;
+    }
+
     public void addFigure(Figure figure) {
         if (scene == null) {
             scene = new ArrayList<>();
         }
         scene.add(figure);
+    }
+
+    public void addPointLight(PointLight pointLight) {
+        if (pointLights == null) {
+            pointLights = new ArrayList<>();
+        }
+        pointLights.add(pointLight);
+    }
+
+    public void setAmbientLight(AmbientLight ambientLight) {
+        this.ambientLight = ambientLight;
     }
 
     private void glCreateWindow(int width, int height) {
@@ -141,41 +160,200 @@ public class Raytracer {
                 Double[] direction = new Double[]{Px, Py, -1.0};
                 direction = AMath.div(direction, AMath.norm(direction));
 
-                this.glPoint(x, y, this.castRay(this.camPosition, direction));
+                this.glPoint(x, y, this.castRay(this.camPosition, direction, null, 0));
             }
         }
     }
 
-    private Color castRay(Double[] origin, Double[] direction){
+    private Color castRay(Double[] origin, Double[] direction, Figure origObj, int recursion) {
+        Intersect intersect = this.sceneIntersect(origin, direction, origObj);
 
-        Material material = this.sceneIntersect(origin, direction);
+        if (intersect == null || recursion >= MAXRECURSIONDEPTH) {
 
-        if (material == null){
+            if (this.envMap != null) {
+                return this.envMap.getColor(direction);
+            }
+
             return this.clearColor;
-        }else{
-            return material.getDiffuse();
         }
 
+        Material material = intersect.getSceneObject().getMaterial();
+        Color objectColor = material.getDiffuse();
+
+        Double[] pLightColor = new Double[]{0.0, 0.0, 0.0};
+        Double[] dirLightColor = new Double[]{0.0, 0.0, 0.0};
+        Double[] ambientColor = new Double[]{0.0, 0.0, 0.0};
+        Double[] finalSpecColor = new Double[]{0.0, 0.0, 0.0};
+        Double[] finalColor = new Double[]{0.0, 0.0, 0.0};
+        Color refractColor = new Color(0, 0, 0);
+        ;
+
+        Double[] viewDir = AMath.subtract(this.camPosition, intersect.getPoint());
+        viewDir = AMath.div(viewDir, AMath.norm(viewDir));
+
+        if (this.ambientLight != null) {
+            ambientColor = AMath.multScalarAndColor(this.ambientLight.getStrength(), this.ambientLight.getColor());
+        }
+
+        double shadowIntensity = 0.0;
+
+        if (this.directionalLight != null) {
+            Double[] light_dir = AMath.negative(this.directionalLight.getDirection());
+
+
+            double intensity = AMath.dot(intersect.getNormal(), light_dir) * this.directionalLight.getIntensity();
+            intensity = intensity < 0 ? 0 : intensity;
+
+            Double[] diffuseColor = AMath.multScalarAndColor(intensity, this.directionalLight.getColor());
+
+            Double[] reflection = AMath.reflect(intersect.getNormal(), light_dir);
+
+            double dot = AMath.dot(viewDir, reflection);
+            dot = dot < 0 ? 0 : dot;
+            double specIntensity = this.directionalLight.getIntensity() * Math.pow(dot, material.getSpec());
+
+            Double[] specColor = AMath.multScalarAndColor(specIntensity, this.directionalLight.getColor());
+
+            // shadows
+            Intersect shadInter = this.sceneIntersect(intersect.getPoint(), light_dir, intersect.getSceneObject());
+            if (shadInter != null) {
+                shadowIntensity = 1.0;
+            }
+
+            dirLightColor = AMath.multVectorAndEscalar(AMath.addVectors(diffuseColor, specColor), (1 - shadowIntensity));
+            finalSpecColor = AMath.addVectors(finalSpecColor, AMath.multVectorAndEscalar(specColor, 1 - shadowIntensity));
+
+        }
+
+        for (PointLight pointLight : pointLights) {
+            Double[] light_dir = AMath.subtract(pointLight.getPosition(), intersect.getPoint());
+            light_dir = AMath.div(light_dir, AMath.norm(light_dir));
+            shadowIntensity = 0.0;
+
+            double intensity = AMath.dot(intersect.getNormal(), light_dir) * pointLight.getIntensity();
+            intensity = intensity < 0 ? 0 : intensity;
+
+
+            Double[] diffuseColor = AMath.multScalarAndColor(intensity, pointLight.getColor());
+
+            Double[] reflection = AMath.reflect(intersect.getNormal(), light_dir);
+
+            double dot = AMath.dot(viewDir, reflection);
+            dot = dot < 0 ? 0 : dot;
+            double specIntensity = pointLight.getIntensity() * Math.pow(dot, material.getSpec());
+            Double[] specColor = AMath.multScalarAndColor(specIntensity, pointLight.getColor());
+
+            // shadow
+            Intersect shadInter = this.sceneIntersect(intersect.getPoint(), light_dir, intersect.getSceneObject());
+            double lightDistance = AMath.norm(AMath.subtract(pointLight.getPosition(), intersect.getPoint()));
+
+            if (shadInter != null && shadInter.getDistance() < lightDistance) {
+                shadowIntensity = 1.0;
+            }
+
+            pLightColor = AMath.addVectors(
+                    pLightColor,
+                    AMath.multVectorAndEscalar(AMath.addVectors(diffuseColor, specColor), (1 - shadowIntensity))
+            );
+            finalSpecColor = AMath.addVectors(finalSpecColor, AMath.multVectorAndEscalar(specColor, 1 - shadowIntensity));
+        }
+
+
+        if (material.getMatType() == Material.OPAQUE) {
+            finalColor = AMath.addVectors(pLightColor, ambientColor, dirLightColor, finalSpecColor);
+
+        } else if (material.getMatType() == Material.REFLECTIVE) {
+            Double[] reflect = AMath.reflect(intersect.getNormal(), AMath.negative(direction));
+            Color reflectColor = this.castRay(intersect.getPoint(), reflect, intersect.getSceneObject(), recursion + 1);
+
+            finalColor = new Double[]{
+                    (reflectColor.getRed() + finalSpecColor[0]) / 255.0,
+                    (reflectColor.getGreen() + finalSpecColor[1]) / 255.0,
+                    (reflectColor.getBlue() + finalSpecColor[2]) / 255.0,
+            };
+
+
+        } else if (material.getMatType() == Material.TRANSPARENT) {
+            boolean outside = AMath.dot(direction, intersect.getNormal()) < 0;
+            Double[] bias = AMath.multVectorAndEscalar(intersect.getNormal(), 0.001);
+
+            double kr = AMath.fresnel(intersect.getNormal(), direction, material.getIor());
+
+            Double[] reflect = AMath.reflect(intersect.getNormal(), AMath.negative(direction));
+            Double[] reflectOrig = outside ?
+                    AMath.addVectors(intersect.getPoint(), bias) :
+                    AMath.subtract(intersect.getPoint(), bias);
+            Color rc = this.castRay(reflectOrig, reflect, null, recursion + 1);
+            Double[] reflectColor = new Double[]{
+                    rc.getRed() / 255.0,
+                    rc.getGreen() / 255.0,
+                    rc.getBlue() / 255.0
+            };
+
+
+            if (kr < 1.0) {
+                Double[] refract = AMath.refract(intersect.getNormal(), direction, material.getIor());
+
+                Double[] refractOrig = outside ?
+                        AMath.subtract(intersect.getPoint(), bias) :
+                        AMath.addVectors(intersect.getPoint(), bias);
+                refractColor = this.castRay(refractOrig, refract, null, recursion + 1);
+            }
+
+            finalColor = new Double[]{
+                    (refractColor.getRed() / 255.0) * kr + reflectColor[0] * (1 - kr) + finalSpecColor[0],
+                    (refractColor.getGreen() / 255.0) * kr + reflectColor[1] * (1 - kr) + finalSpecColor[1],
+                    (refractColor.getBlue() / 255.0) * kr + reflectColor[2] * (1 - kr) + finalSpecColor[2],
+            };
+
+
+        }
+
+        finalColor[0] *= objectColor.getRed() / 255.0;
+        finalColor[1] *= objectColor.getGreen() / 255.0;
+        finalColor[2] *= objectColor.getBlue() / 255.0;
+
+
+        finalColor[0] = finalColor[0] > 1 ? 1 : finalColor[0];
+        finalColor[1] = finalColor[1] > 1 ? 1 : finalColor[1];
+        finalColor[2] = finalColor[2] > 1 ? 1 : finalColor[2];
+
+        return new Color(
+                (int) (finalColor[0] * 255),
+                (int) (finalColor[1] * 255),
+                (int) (finalColor[2] * 255)
+        );
     }
 
-    private Material sceneIntersect(Double[] origin, Double[] direction){
-        Material material = null;
+    private Intersect sceneIntersect(Double[] origin, Double[] direction, Figure origObj) {
+        Intersect intersect = null;
 
         double depth = Double.POSITIVE_INFINITY;
 
-        for (Figure obj : scene){
-            Intersect intersect = obj.rayIntersect(origin, direction);
-
-            if (intersect != null){
-                if (intersect.getDistance() < depth){
-                    depth = intersect.getDistance();
-                    material = obj.getMaterial();
+        for (Figure obj : scene) {
+            if (obj != origObj) {
+                Intersect hit = obj.rayIntersect(origin, direction);
+                if (hit != null) {
+                    if (hit.getDistance() < depth) {
+                        depth = hit.getDistance();
+                        intersect = hit;
+                    }
                 }
             }
-
         }
 
-        return material;
+        return intersect;
+    }
+
+
+    public BufferedImage getImage() {
+        BufferedImage bufferedImage = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < this.width; x++) {
+            for (int y = 0; y < this.height; y++) {
+                bufferedImage.setRGB(x, y, pixels[x][y].getRGB());
+            }
+        }
+        return bufferedImage;
     }
 
     public void finish(String filename) {

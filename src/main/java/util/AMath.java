@@ -1,5 +1,6 @@
 package util;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -180,5 +181,149 @@ public class AMath {
         }
         return mF;
     }
+
+    public static Double[] multVectorAndEscalar(Double[] matrix, double mt) {
+        Double[] finalMatrix = new Double[matrix.length];
+
+        for (int i = 0; i < matrix.length; i++) {
+            finalMatrix[i] = matrix[i] * mt;
+        }
+
+        return finalMatrix;
+    }
+
+    public static Double[] addVectorAndEscalar(Double[] matrix, double mt) {
+        Double[] finalMatrix = new Double[matrix.length];
+
+        for (int i = 0; i < matrix.length; i++) {
+            finalMatrix[i] = matrix[i] + mt;
+        }
+
+        return finalMatrix;
+    }
+
+    public static Double[] divVectorAndEscalar(Double[] matrix, double mt) {
+        Double[] finalMatrix = new Double[matrix.length];
+
+        for (int i = 0; i < matrix.length; i++) {
+            finalMatrix[i] = matrix[i] / mt;
+        }
+
+        return finalMatrix;
+    }
+
+    public static Double[] multVectors(Double[] v1, Double[] v2) {
+        Double[] finalVec = new Double[v1.length];
+
+        for (int i = 0; i < v1.length; i++) {
+            finalVec[i] = v1[i] * v2[i];
+        }
+
+        return finalVec;
+    }
+
+    public static Double[] addVectors(Double[]... vects) {
+
+        if (vects.length == 0) {
+            return null;
+        }
+
+        Double[] finalVec = new Double[vects[0].length];
+
+        for (int i = 0; i < vects.length; i++) {
+            for (int j = 0; j < vects[i].length; j++) {
+                if (finalVec[j] == null) {
+                    finalVec[j] = 0.0;
+                }
+                finalVec[j] += vects[i][j];
+            }
+        }
+
+        return finalVec;
+    }
+
+    public static Double[] negative(Double[] vector) {
+        Double[] finalVec = new Double[vector.length];
+
+        for (int i = 0; i < finalVec.length; i++) {
+            finalVec[i] = vector[i] * -1;
+        }
+
+        return finalVec;
+    }
+
+    public static Double[] reflect(Double[] normal, Double[] dirVector) {
+        double m1 = 2 * dot(normal, dirVector);
+        Double[] m2 = multVectorAndEscalar(normal, m1);
+        Double[] m3 = subtract(m2, dirVector);
+        Double[] normReflect = div(m3, norm(m3));
+        return normReflect;
+    }
+
+    public static Double[] refract(Double[] normal, Double[] dirVector, double ior) {
+        double s = dot(dirVector, normal);
+        double cosi = (s > 1 ? 1 : s) < -1 ? -1 : (s > 1 ? 1 : s);
+        double etai = 1;
+        double etat = ior;
+
+        if (cosi < 0) {
+            cosi = -cosi;
+        } else {
+            double temp = etai;
+            etai = etat;
+            etat = temp;
+            normal = negative(normal);
+        }
+
+        double eta = etai / etat;
+        double k = 1 - eta * eta * (1 - (cosi * cosi));
+
+        if (k < 0)
+            return null;
+
+
+        Double[] R = addVectors(
+                multVectorAndEscalar(dirVector, eta),
+                multVectorAndEscalar(normal, (eta * cosi - Math.pow(k, 0.5)))
+        );
+
+        return div(R, norm(R));
+    }
+
+    public static double fresnel(Double[] normal, Double[] dirVector, double ior) {
+        double s = dot(dirVector, normal);
+        double cosi = (s > 1 ? 1 : s) < -1 ? -1 : (s > 1 ? 1 : s);
+        double etai = 1;
+        double etat = ior;
+
+        if (cosi > 0) {
+            double temp = etai;
+            etai = etat;
+            etat = temp;
+        }
+
+        double sint = etai / etat * Math.pow(((1 - cosi * cosi) < 0 ? 0 : (1 - cosi * cosi)), 0.5);
+
+        if (sint >= 1) {
+            return 1;
+        }
+
+        double cost = Math.pow((1 - sint * sint), 0.5) < 0 ? 0 : Math.pow((1 - sint * sint), 0.5);
+        cosi = Math.abs(cost);
+        double Rs = ((etat * cosi) * (etai * cost)) / ((etat * cost) + (etai * cost));
+        double Rp = ((etai * cosi) * (etat * cost)) / ((etai * cost) + (etat * cost));
+
+        return (Rs * Rs + Rp * Rp) / 2.0;
+
+    }
+
+    public static Double[] multScalarAndColor(double escalar, Color color) {
+        return new Double[]{
+                escalar * (color.getRed() / 255.0),
+                escalar * (color.getGreen() / 255.0),
+                escalar * (color.getBlue() / 255.0)
+        };
+    }
+
 
 }
