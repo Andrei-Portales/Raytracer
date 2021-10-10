@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Raytracer {
     private final int MAXRECURSIONDEPTH = 3;
@@ -186,7 +187,7 @@ public class Raytracer {
         Double[] finalSpecColor = new Double[]{0.0, 0.0, 0.0};
         Double[] finalColor = new Double[]{0.0, 0.0, 0.0};
         Color refractColor = new Color(0, 0, 0);
-        ;
+
 
         Double[] viewDir = AMath.subtract(this.camPosition, intersect.getPoint());
         viewDir = AMath.div(viewDir, AMath.norm(viewDir));
@@ -225,42 +226,54 @@ public class Raytracer {
 
         }
 
-        for (PointLight pointLight : pointLights) {
-            Double[] light_dir = AMath.subtract(pointLight.getPosition(), intersect.getPoint());
-            light_dir = AMath.div(light_dir, AMath.norm(light_dir));
-            shadowIntensity = 0.0;
+        if (pointLights != null){
+            for (PointLight pointLight : pointLights) {
+                Double[] light_dir = AMath.subtract(pointLight.getPosition(), intersect.getPoint());
+                light_dir = AMath.div(light_dir, AMath.norm(light_dir));
+                shadowIntensity = 0.0;
 
-            double intensity = AMath.dot(intersect.getNormal(), light_dir) * pointLight.getIntensity();
-            intensity = intensity < 0 ? 0 : intensity;
+                double intensity = AMath.dot(intersect.getNormal(), light_dir) * pointLight.getIntensity();
+                intensity = intensity < 0 ? 0 : intensity;
 
 
-            Double[] diffuseColor = AMath.multScalarAndColor(intensity, pointLight.getColor());
+                Double[] diffuseColor = AMath.multScalarAndColor(intensity, pointLight.getColor());
 
-            Double[] reflection = AMath.reflect(intersect.getNormal(), light_dir);
+                Double[] reflection = AMath.reflect(intersect.getNormal(), light_dir);
 
-            double dot = AMath.dot(viewDir, reflection);
-            dot = dot < 0 ? 0 : dot;
-            double specIntensity = pointLight.getIntensity() * Math.pow(dot, material.getSpec());
-            Double[] specColor = AMath.multScalarAndColor(specIntensity, pointLight.getColor());
+                double dot = AMath.dot(viewDir, reflection);
+                dot = dot < 0 ? 0 : dot;
+                double specIntensity = pointLight.getIntensity() * Math.pow(dot, material.getSpec());
+                Double[] specColor = AMath.multScalarAndColor(specIntensity, pointLight.getColor());
 
-            // shadow
-            Intersect shadInter = this.sceneIntersect(intersect.getPoint(), light_dir, intersect.getSceneObject());
-            double lightDistance = AMath.norm(AMath.subtract(pointLight.getPosition(), intersect.getPoint()));
+                // shadow
+                Intersect shadInter = this.sceneIntersect(intersect.getPoint(), light_dir, intersect.getSceneObject());
+                double lightDistance = AMath.norm(AMath.subtract(pointLight.getPosition(), intersect.getPoint()));
 
-            if (shadInter != null && shadInter.getDistance() < lightDistance) {
-                shadowIntensity = 1.0;
+                if (shadInter != null && shadInter.getDistance() < lightDistance) {
+                    shadowIntensity = 1.0;
+                }
+
+                pLightColor = AMath.addVectors(
+                        pLightColor,
+                        AMath.multVectorAndEscalar(AMath.addVectors(diffuseColor, specColor), (1 - shadowIntensity))
+                );
+                finalSpecColor = AMath.addVectors(finalSpecColor, AMath.multVectorAndEscalar(specColor, 1 - shadowIntensity));
             }
-
-            pLightColor = AMath.addVectors(
-                    pLightColor,
-                    AMath.multVectorAndEscalar(AMath.addVectors(diffuseColor, specColor), (1 - shadowIntensity))
-            );
-            finalSpecColor = AMath.addVectors(finalSpecColor, AMath.multVectorAndEscalar(specColor, 1 - shadowIntensity));
         }
+
 
 
         if (material.getMatType() == Material.OPAQUE) {
             finalColor = AMath.addVectors(pLightColor, ambientColor, dirLightColor, finalSpecColor);
+
+            if (material.getTexture() != null && intersect.getTexCoords() != null) {
+                Color texColor = material.getTexture().getColor(intersect.getTexCoords()[0], intersect.getTexCoords()[1]);
+
+                finalColor[0] *= texColor.getRed() / 255.0;
+                finalColor[1] *= texColor.getGreen() / 255.0;
+                finalColor[2] *= texColor.getBlue() / 255.0;
+
+            }
 
         } else if (material.getMatType() == Material.REFLECTIVE) {
             Double[] reflect = AMath.reflect(intersect.getNormal(), AMath.negative(direction));

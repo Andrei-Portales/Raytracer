@@ -12,6 +12,7 @@ public class AABB extends Figure {
 
     public AABB(Double[] position, Double[] size, Material material) {
         this.position = position;
+        this.position[1] = -1 * this.position[1];
         this.size = size;
         this.material = material;
         this.planes = new Plane[6];
@@ -26,12 +27,14 @@ public class AABB extends Figure {
         this.planes[1] = new Plane(AMath.addVectors(position, new Double[]{-halfSizeX, 0.0, 0.0}), new Double[]{-1.0, 0.0, 0.0}, material);
 
         // up and down
-        this.planes[4] = new Plane(AMath.addVectors(position, new Double[]{0.0, halfSizeY, 0.0}), new Double[]{0.0, 1.0, 0.0}, material);
-        this.planes[5] = new Plane(AMath.addVectors(position, new Double[]{0.0, -halfSizeY, 0.0}), new Double[]{0.0, -1.0, 0.0}, material);
+        this.planes[2] = new Plane(AMath.addVectors(position, new Double[]{0.0, halfSizeY, 0.0}), new Double[]{0.0, 1.0, 0.0}, material);
+        this.planes[3] = new Plane(AMath.addVectors(position, new Double[]{0.0, -halfSizeY, 0.0}), new Double[]{0.0, -1.0, 0.0}, material);
 
         // front and back
-        this.planes[2] = new Plane(AMath.addVectors(position, new Double[]{0.0, 0.0, halfSizeZ}), new Double[]{0.0, 0.0, 1.0}, material);
-        this.planes[3] = new Plane(AMath.addVectors(position, new Double[]{0.0, 0.0, -halfSizeZ}), new Double[]{0.0, 0.0, -1.0}, material);
+        this.planes[4] = new Plane(AMath.addVectors(position, new Double[]{0.0, 0.0, halfSizeZ}), new Double[]{0.0, 0.0, 1.0}, material);
+        this.planes[5] = new Plane(AMath.addVectors(position, new Double[]{0.0, 0.0, -halfSizeZ}), new Double[]{0.0, 0.0, -1.0}, material);
+
+
 
         double epsilon = 0.001;
 
@@ -48,6 +51,8 @@ public class AABB extends Figure {
         Intersect intersect = null;
         double t = Double.POSITIVE_INFINITY;
 
+        Double[] uvs = null;
+
         for (Plane plane : this.planes) {
             Intersect planeInter = plane.rayIntersect(origin, direction);
 
@@ -58,6 +63,22 @@ public class AABB extends Figure {
                             if (planeInter.getDistance() < t) {
                                 t = planeInter.getDistance();
                                 intersect = planeInter;
+
+                                double u = 0;
+                                double v = 0;
+
+                                if (Math.abs(plane.getNormal()[0]) > 0) {
+                                    u = (planeInter.getPoint()[1] - this.boundsMin[1]) / (this.boundsMax[1] - this.boundsMin[1]);
+                                    v = (planeInter.getPoint()[2] - this.boundsMin[2]) / (this.boundsMax[2] - this.boundsMin[2]);
+                                } else if (Math.abs(plane.getNormal()[1]) > 0) {
+                                    u = (planeInter.getPoint()[0] - this.boundsMin[0]) / (this.boundsMax[0] - this.boundsMin[0]);
+                                    v = (planeInter.getPoint()[2] - this.boundsMin[2]) / (this.boundsMax[2] - this.boundsMin[2]);
+                                } else if (Math.abs(plane.getNormal()[2]) > 0) {
+                                    u = (planeInter.getPoint()[0] - this.boundsMin[0]) / (this.boundsMax[0] - this.boundsMin[0]);
+                                    v = (planeInter.getPoint()[1] - this.boundsMin[1]) / (this.boundsMax[1] - this.boundsMin[1]);
+                                }
+
+                                uvs = new Double[]{u, v};
                             }
                         }
                     }
@@ -69,6 +90,6 @@ public class AABB extends Figure {
             return null;
         }
 
-        return new Intersect(intersect.getDistance(), intersect.getPoint(), intersect.getNormal(), this);
+        return new Intersect(intersect.getDistance(), intersect.getPoint(), intersect.getNormal(), uvs, this);
     }
 }

@@ -1,5 +1,6 @@
 package figures;
 
+
 import java.awt.*;
 
 public class Material {
@@ -10,12 +11,21 @@ public class Material {
     private int spec;
     private int matType;
     private double ior;
+    private Texture texture;
 
     public Material(Color diffuse, int spec, double ior, Integer matType) {
         this.diffuse = diffuse;
         this.spec = spec;
         this.matType = matType != null ? matType : OPAQUE;
         this.ior = ior;
+    }
+
+    public Material(Color diffuse, int spec, double ior, Texture texture, Integer matType) {
+        this.diffuse = diffuse;
+        this.spec = spec;
+        this.matType = matType != null ? matType : OPAQUE;
+        this.ior = ior;
+        this.texture = texture;
     }
 
     public Material() {
@@ -37,5 +47,9 @@ public class Material {
 
     public int getMatType() {
         return matType;
+    }
+
+    public Texture getTexture() {
+        return texture;
     }
 }

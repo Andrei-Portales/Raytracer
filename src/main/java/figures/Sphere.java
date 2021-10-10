@@ -12,7 +12,7 @@ public class Sphere extends Figure {
         this.center = center;
         this.center[1] = this.center[1] * -1;
         this.radius = radius;
-        this.material = material != null ? material : new Material(new Color(255, 255, 255), 0,1, null);
+        this.material = material != null ? material : new Material(new Color(255, 255, 255), 0, 1, null);
     }
 
     @Override
@@ -45,10 +45,11 @@ public class Sphere extends Figure {
         Double[] normal = AMath.subtract(hit, this.center);
         normal = AMath.div(normal, AMath.norm(normal));
 
-        // TODO: La esfera esta completamente detras de la camara
+        double u = 1 -  (Math.atan2(normal[2], normal[0]) / (2 * Math.PI) + 0.5);
+        double v = Math.acos(-1 * normal[1]) / Math.PI;
 
-        // TODO: La camara esta dentro de la esfera
+        Double[] uvs = new Double[]{Math.abs(u), Math.abs(v)};
 
-        return new Intersect(t0, hit, normal, this);
+        return new Intersect(t0, hit, normal, uvs, this);
     }
 }

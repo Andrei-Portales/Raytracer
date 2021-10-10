@@ -5,12 +5,21 @@ public class Intersect {
     private Double[] normal;
     private Double[] point;
     private Figure sceneObject;
+    private Double[] texCoords;
 
     public Intersect(double distance, Double[] point, Double[] normal, Figure sceneObject){
         this.distance = distance;
         this.normal = normal;
         this.point = point;
         this.sceneObject = sceneObject;
+    }
+
+    public Intersect(double distance, Double[] point, Double[] normal, Double[] texCoords, Figure sceneObject){
+        this.distance = distance;
+        this.normal = normal;
+        this.point = point;
+        this.sceneObject = sceneObject;
+        this.texCoords = texCoords;
     }
 
     public double getDistance() {
@@ -23,6 +32,10 @@ public class Intersect {
 
     public Double[] getPoint() {
         return point;
+    }
+
+    public Double[] getTexCoords() {
+        return texCoords;
     }
 
     public Figure getSceneObject() {
