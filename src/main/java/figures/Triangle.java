@@ -7,8 +7,6 @@ public class Triangle extends Figure {
     private Double[] v0;
     private Double[] v1;
     private Double[] v2;
-    private Double[] boundsMin = new Double[]{0.0, 0.0, 0.0};
-    private Double[] boundsMax = new Double[]{0.0, 0.0, 0.0};
     private Double[] center;
 
 
@@ -22,13 +20,6 @@ public class Triangle extends Figure {
         v0 = new Double[]{center[0], center[1] + d, center[2]};
         v1 = new Double[]{center[0] - d, center[1] - d, center[2]};
         v2 = new Double[]{center[0] + d, center[1] - d, center[2]};
-
-        double epsilon = 0.001;
-
-        for (int i = 0; i < 3; i++) {
-            this.boundsMin[i] = center[i] - (epsilon + d);
-            this.boundsMax[i] = center[i] + (epsilon + d);
-        }
 
     }
 
