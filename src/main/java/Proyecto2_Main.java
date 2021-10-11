@@ -11,6 +11,8 @@ public class Proyecto2_Main {
     private static Material basketball = new Material(new Color(255, 255, 255), 128, 5, new Texture("proyecto2_resources/basketball.jpg"), Material.OPAQUE);
     private static Material futbol = new Material(new Color(255, 255, 255), 128, 5, new Texture("proyecto2_resources/futbol.jpg"), Material.OPAQUE);
     private static Material mirror = new Material(new Color(255, 255, 255), 128, 10, Material.REFLECTIVE);
+    private static Material glass = new Material(new Color(255, 255, 255), 64, 10, Material.TRANSPARENT);
+
 
 
     // Steve materials
@@ -45,6 +47,7 @@ public class Proyecto2_Main {
 
 //        // Figuras
         rtx.addFigure(new Sphere(new Double[]{-5.5, 3.5, -8.0}, 0.8, sun));
+        rtx.addFigure(new Sphere(new Double[]{5.5, 3.5, -8.0}, 0.8, glass));
 
         rtx.addFigure(new Triangle(new Double[]{5.8, -3.0, -15.0}, 4.0, mirror));
         rtx.addFigure(new Triangle(new Double[]{-5.8, -3.0, -15.0}, 4.0, mirror));
