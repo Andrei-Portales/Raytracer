@@ -14,13 +14,19 @@ public class Proyecto2_Main {
     private static Material glass = new Material(new Color(255, 255, 255), 64, 10, Material.TRANSPARENT);
 
 
-
     // Steve materials
     private static Material steveFace = new Material(new Color(255, 255, 255), 128, 5, new Texture("proyecto2_resources/steve_face.png"), Material.OPAQUE);
     private static Material steveShirt = new Material(new Color(255, 255, 255), 128, 5, new Texture("proyecto2_resources/steve_shirt.jpg"), Material.OPAQUE);
     private static Material stevePants = new Material(new Color(255, 255, 255), 128, 5, new Texture("proyecto2_resources/steve_pants.png"), Material.OPAQUE);
     private static Material steveShoes = new Material(new Color(150, 150, 150), 128, 5, null, Material.OPAQUE);
     private static Material steveHands = new Material(new Color(155, 103, 60), 128, 5, null, Material.OPAQUE);
+
+    private static Material rashkovskyFace = new Material(new Color(255, 255, 255), 128, 5, new Texture("proyecto2_resources/aldeano.png"), Material.OPAQUE);
+    private static Material pumpkin = new Material(new Color(255, 255, 255), 128, 5, new Texture("proyecto2_resources/pumpkin2.png"), Material.OPAQUE);
+    private static Material rashkovskyPants = new Material(new Color(255, 150, 150), 128, 5, new Texture("proyecto2_resources/galaxy.jpg"), Material.OPAQUE);
+    private static Material aldeanoHands = new Material(new Color(200, 150, 100), 128, 5, null, Material.OPAQUE);
+
+
 
 
     public static void main(String... args) {
@@ -56,25 +62,31 @@ public class Proyecto2_Main {
         tree(rtx, 0.8, new Double[]{6.2, -2.5, -10.0});
         tree(rtx, 0.8, new Double[]{-6.2, -2.5, -10.0});
 
-        rtx.addFigure(new Sphere(new Double[]{-0.9, -2.9, -10.0}, 0.4, basketball));
-        rtx.addFigure(new Sphere(new Double[]{0.9, -2.9, -10.0}, 0.4, futbol));
+        rtx.addFigure(new Sphere(new Double[]{-0.55, -2.9, -10.0}, 0.4, basketball));
+        rtx.addFigure(new Sphere(new Double[]{0.55, -2.9, -10.0}, 0.4, futbol));
+
         rtx.addFigure(new Sphere(new Double[]{0.0, 2.0, -8.0}, 1.7, mirror));
 
-        //Steve
-        rtx.addFigure(new AABB(new Double[]{0.0, -1.0, -10.0}, new Double[]{1.0, 1.0, 1.0}, steveFace));
-        rtx.addFigure(new AABB(new Double[]{0.0, -2.0, -10.0}, new Double[]{1.0, 1.3, 1.0}, steveShirt));
-        rtx.addFigure(new AABB(new Double[]{0.0, -3.0, -10.0}, new Double[]{1.0, 1.3, 1.0}, stevePants));
-        rtx.addFigure(new AABB(new Double[]{0.0, -3.7, -10.0}, new Double[]{1.0, 0.3, 1.0}, steveShoes));
+//        Steve
+        rtx.addFigure(new AABB(new Double[]{-1.5, -1.0, -10.0}, new Double[]{1.0, 1.0, 1.0}, steveFace));
+        rtx.addFigure(new AABB(new Double[]{-1.5, -2.0, -10.0}, new Double[]{1.0, 1.3, 1.0}, steveShirt));
+        rtx.addFigure(new AABB(new Double[]{-1.5, -3.0, -10.0}, new Double[]{1.0, 1.3, 1.0}, stevePants));
+        rtx.addFigure(new AABB(new Double[]{-1.5, -3.7, -10.0}, new Double[]{1.0, 0.3, 1.0}, steveShoes));
+        rtx.addFigure(new AABB(new Double[]{-0.8, -1.6, -10.0}, new Double[]{0.5, 0.5, 1.0}, steveShirt));
+        rtx.addFigure(new AABB(new Double[]{-2.2, -1.6, -10.0}, new Double[]{0.5, 0.5, 1.0}, steveShirt));
+        rtx.addFigure(new AABB(new Double[]{-2.2, -2.1, -10.0}, new Double[]{0.5, 0.6, 1.0}, steveHands));
+        rtx.addFigure(new AABB(new Double[]{-0.8, -2.1, -10.0}, new Double[]{0.5, 0.6, 1.0}, steveHands));
 
-        rtx.addFigure(new AABB(new Double[]{0.7, -1.6, -10.0}, new Double[]{0.5, 0.5, 1.0}, steveShirt));
-        rtx.addFigure(new AABB(new Double[]{-0.7, -1.6, -10.0}, new Double[]{0.5, 0.5, 1.0}, steveShirt));
-        rtx.addFigure(new AABB(new Double[]{-0.7, -2.1, -10.0}, new Double[]{0.5, 0.6, 1.0}, steveHands));
-        rtx.addFigure(new AABB(new Double[]{0.7, -2.1, -10.0}, new Double[]{0.5, 0.6, 1.0}, steveHands));
+        // Rashkovsky
+        rtx.addFigure(new AABB(new Double[]{1.5, -1.0, -10.0}, new Double[]{1.0, 1.0, 1.0}, rashkovskyFace));
+        rtx.addFigure(new AABB(new Double[]{1.5, -2.0, -10.0}, new Double[]{1.0, 1.3, 1.0}, pumpkin));
+        rtx.addFigure(new AABB(new Double[]{1.5, -3.0, -10.0}, new Double[]{1.0, 1.3, 1.0}, rashkovskyPants));
+        rtx.addFigure(new AABB(new Double[]{1.5, -3.7, -10.0}, new Double[]{1.0, 0.3, 1.0}, steveShoes));
 
-
-
-
-
+        rtx.addFigure(new AABB(new Double[]{2.2, -1.6, -10.0}, new Double[]{0.5, 0.5, 1.0}, pumpkin));
+        rtx.addFigure(new AABB(new Double[]{0.8, -1.6, -10.0}, new Double[]{0.5, 0.5, 1.0}, pumpkin));
+        rtx.addFigure(new AABB(new Double[]{0.8, -2.1, -10.0}, new Double[]{0.5, 0.6, 1.0}, aldeanoHands));
+        rtx.addFigure(new AABB(new Double[]{2.2, -2.1, -10.0}, new Double[]{0.5, 0.6, 1.0}, aldeanoHands));
 
 
         long t1 = System.currentTimeMillis();
