@@ -27,23 +27,21 @@ public class Proyecto2_Main {
     private static Material aldeanoHands = new Material(new Color(200, 150, 100), 128, 5, null, Material.OPAQUE);
 
 
+    private static Material tnt = new Material(new Color(255, 255, 255), 128, 5, new Texture("proyecto2_resources/tnt.jpg"), Material.OPAQUE);
+
+
 
 
     public static void main(String... args) {
 
-        int width = 1500;
-        int height = 1000;
+        int width = 7680;
+        int height = 4320;
+
+//        3840 x 2160
 
         Raytracer rtx = new Raytracer(width, height);
 
         rtx.setEnvMap(new EnvMap("proyecto2_resources/4k_minecraft.jpg"));
-
-        // Materiales
-
-
-//        Material earth = new Material(new Color(255, 255, 255), 1, 1, new Texture("textures/earthDay.bmp"), Material.OPAQUE);
-//        Material box = new Material(new Color(255, 255, 255), 1, 1, new Texture("textures/box.bmp"), Material.OPAQUE);
-
 
         // Luces
         rtx.setAmbientLight(new AmbientLight(0.5, null));
@@ -54,11 +52,11 @@ public class Proyecto2_Main {
 //        // Figuras
         rtx.addFigure(new Sphere(new Double[]{-5.5, 3.5, -8.0}, 0.8, sun));
         rtx.addFigure(new Sphere(new Double[]{5.5, 3.5, -8.0}, 0.8, glass));
-
+//
         rtx.addFigure(new Triangle(new Double[]{5.8, -3.0, -15.0}, 4.0, mirror));
         rtx.addFigure(new Triangle(new Double[]{-5.8, -3.0, -15.0}, 4.0, mirror));
-
-        // Arboles
+//
+//        // Arboles
         tree(rtx, 0.8, new Double[]{6.2, -2.5, -10.0});
         tree(rtx, 0.8, new Double[]{-6.2, -2.5, -10.0});
 
@@ -88,10 +86,13 @@ public class Proyecto2_Main {
         rtx.addFigure(new AABB(new Double[]{0.8, -2.1, -10.0}, new Double[]{0.5, 0.6, 1.0}, aldeanoHands));
         rtx.addFigure(new AABB(new Double[]{2.2, -2.1, -10.0}, new Double[]{0.5, 0.6, 1.0}, aldeanoHands));
 
+        rtx.addFigure(new AABB(new Double[]{0.0, -1.6, -10.0}, new Double[]{0.5, 0.6, 1.0}, tnt));
+        rtx.addFigure(new AABB(new Double[]{0.0, -2.0, -10.0}, new Double[]{0.5, 0.6, 1.0}, tnt));
+
 
         long t1 = System.currentTimeMillis();
         rtx.glRender();
-        rtx.finish("proyecto2_outputs/proyecto_output.bmp");
+        rtx.finish("proyecto2_outputs/proyecto_output.png");
         long t2 = System.currentTimeMillis();
 
         System.out.println((t2 - t1) / 1000.0);

@@ -380,7 +380,7 @@ public class Raytracer {
             }
 
             File file = new File(filename);
-            ImageIO.write(bufferedImage, "BMP", file);
+            ImageIO.write(bufferedImage, "PNG", file);
         } catch (Exception e) {
             e.printStackTrace();
         }
