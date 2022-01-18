@@ -34,8 +34,8 @@ public class Proyecto2_Main {
 
     public static void main(String... args) {
 
-        int width = 7680;
-        int height = 4320;
+        int width = 3840;
+        int height = 2160;
 
 //        3840 x 2160
 
